@@ -75,14 +75,14 @@ knitr::include_graphics("img/staff-employment.png")
 
 Let's start by loading the data used to create this plot.
 
-```{r load-data-staff, message = FALSE}
+```{r load-data-staff, message = FALSE, eval = TRUE}
 staff <- read_csv("data/instructional-staff.csv")
 ```
 
 Each row in this dataset represents a faculty type, and the columns are the years for which we have data.
 The values are percentage of hires of that type of faculty for each year.
 
-```{r echo = FALSE}
+```{r echo = FALSE, eval = TRUE}
 staff
 ```
 
@@ -115,7 +115,7 @@ pivot_longer(data, cols, names_to = "name")
 -   The second argument, `cols`, is where you specify which columns to pivot into longer format -- in this case all columns except for the `faculty_type`
 -   The third argument, `names_to`, is a string specifying the name of the column to create from the data stored in the column names of data -- in this case `year`
 
-```{r}
+```{r pivot, eval = TRUE}
 staff_long <- staff %>%
   pivot_longer(cols = -faculty_type, names_to = "year") %>%
   mutate(year = as.numeric(year))
@@ -148,12 +148,46 @@ staff_long %>%
 
 1.  Include the line plot you made above in your report and make sure the figure width is large enough to make it legible.
     Also fix the title, axis labels, and legend label.
+    
+```{r plot, fig.width = 10, fig.fullwidth = TRUE}
+staff_long %>%
+  ggplot(aes(x = year, y = value, group = faculty_type, color = faculty_type)) +
+  geom_line() +
+  labs(
+    title = "Number of Staff Examined Throughout the Years",
+    subtitle = "Measured by Faculty Type",
+    x = "Year",
+    y = "Frequency",
+    color = "Faculty Type"
+  )
+```
 
 2.  Suppose the objective of this plot was to show that the proportion of part-time faculty have gone up over time compared to other instructional staff types.
     What changes would you propose making to this plot to tell this story and why.
 
+`I would mutate the data set to have a data set for the proportion of each faculty type.`
+
 3.  Implement the changes you proposed in the previous exercise.
 
+```{r mutate, eval = TRUE}
+proportion_staff <- staff_long %>%
+  group_by(value, faculty_type, year) %>%
+  summarize(value = n()) %>%
+  mutate(proportion = value / sum(value))
+```
+
+```{r plot-prop, fig.width = 10, fig.fullwidth = TRUE}
+proportion_staff %>%
+  ggplot(aes(x = year, y = proportion, group = faculty_type, color = faculty_type)) +
+  geom_line() +
+  labs(
+    title = "Number of Staff Examined Throughout the Years",
+    subtitle = "Measured by Faculty Type",
+    x = "Year",
+    y = "Proportion",
+    color = "Faculty Type"
+  )
+```
 Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards.*
 
 ## Fisheries
